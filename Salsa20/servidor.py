@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from funciones import Crypto_functions
+from funciones import Crypto_functions, Diffie_Hellman
 
 key = None  # Define key as None
 
