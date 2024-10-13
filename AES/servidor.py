@@ -1,7 +1,7 @@
 import socket
 import threading
 
-from Salsa20.Dif_Hel_1.funciones import Crypto_functions
+from funciones import Crypto_functions
 
 key = None  # Define key as None
 

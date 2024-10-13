@@ -1,5 +1,5 @@
 import yaml
-from funciones import Crypto_functions
+from funciones import Crypto_functions, Diffie_Hellman
 import json
 import math
 
@@ -45,11 +45,21 @@ def leer_y_extraer_mensajes_yaml(ruta_archivo, p, q, g):
             if(x == None):
                 print("No se pudo encontrar el valor de alpha")
                 return None
+            
             continue
 
         if (privado == False):
-            
+            key_diffie2 = Diffie_Hellman(p, q, g)
+            key_diffie2.alpha = x
+            v = datos_base64
+            # Calcular la clave compartida w = u^β
+            w = key_diffie2.generate_shared_secret(v)
+            print(f"Clave compartida generada: {w}")
+
+            key = Crypto_functions.KDF(w)
+            print(f"Llave definitiva: {key}")
             privado = True
+            
         # Extraer el nonce del mensaje
         nonce = datos_base64[:8]  # Asumimos que el nonce es de 8 bytes
         encrypted_message = datos_base64[8:]
