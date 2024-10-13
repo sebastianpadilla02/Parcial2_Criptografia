@@ -16,3 +16,10 @@ Usada por el atacante para poder leer el archivo generado por Wireshark en forma
 ```
 pip install pyyaml
 ```
+
+### Cryptography
+Usada para manejar el intercambio de llaves en el Escenario 2, manejando asi las operaciones con la Curva Elíptica P256
+
+```
+pip install cryptography
+```
