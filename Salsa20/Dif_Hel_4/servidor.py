@@ -1,11 +1,12 @@
 import socket
 import threading
+import json
 
 from funciones import Crypto_functions, Diffie_Hellman
 
 key = None  # Define key as None
 
-def manejar_cliente(client_socket):
+def manejar_cliente(client_socket, key_change):
     global key
 
     try:
@@ -17,12 +18,12 @@ def manejar_cliente(client_socket):
 
             # Extraer el nonce del mensaje
             nonce = data[:8]  # Asumimos que el nonce es de 24 bytes
-            encrypted_message = data[8:] # El mensaje encriptado (sin el nonce)
+            encrypted_message = data[8:]  # El mensaje encriptado (sin el nonce)
 
             # Desencriptar el mensaje
             desencriptar = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
             print(f"Cliente: {desencriptar.decode('utf-8')}")
-            
+
             # Enviar respuesta al cliente
             response = input("Servidor: ")
 
@@ -42,6 +43,7 @@ def iniciar_servidor():
 
     # Crear un socket para el servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # server_socket.bind(('127.0.0.1', 8080))
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(1)
     print("Esperando conexión...")
@@ -50,11 +52,41 @@ def iniciar_servidor():
     client_socket, client_address = server_socket.accept()
     print(f"Conectado con {client_address}")
 
-    # Generar clave y enviarla al cliente (la clave permanece constante)
-    key = Crypto_functions.generar_clave_AES()
-    client_socket.send(key)
+    # Cargar el archivo JSON con los parámetros p, q, g
+    with open('parameters.json') as f:
+        data = json.load(f)
 
-    manejar_cliente(client_socket)
+    # Acceder a un único conjunto de parámetros, por ejemplo, el primero
+    param_set = data["parameters"][3]  # Cambia el índice a 0, 1, 2... según el conjunto que quieras
+
+    # Acceder a los valores de p, q y g
+    p = param_set["p"]
+    q = param_set["q"]
+    g = param_set["g"]
+
+    print(f"Conjunto seleccionado: p={p}, q={q}, g={g}")
+
+    # Iniciar Diffie-Hellman con los parámetros p y g
+    key_change = Diffie_Hellman(p, q, g)
+
+    # Generar u = g^α (clave pública del servidor)
+    u = key_change.generate_public_key()
+
+    # Enviar u al cliente
+    print(f"Enviando u al cliente: {u}")
+    client_socket.send(u.to_bytes((u.bit_length() + 7) // 8, 'big'))
+
+    # Esperar el valor v = g^β del cliente
+    v_bytes = client_socket.recv(1024)
+    v = int.from_bytes(v_bytes, 'big')
+    print(f"Recibido v del cliente: {v}")
+
+    # Calcular la clave compartida w = v^α (clave compartida)
+    key = key_change.generate_shared_secret(v)
+    print(f"Clave compartida generada: {key}")
+
+    # Continuar con el manejo del cliente
+    manejar_cliente(client_socket, key_change)
     server_socket.close()
 
 if __name__ == "__main__":
