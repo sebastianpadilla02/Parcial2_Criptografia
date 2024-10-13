@@ -43,7 +43,7 @@ def iniciar_servidor():
 
     # Crear un socket para el servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #server_socket.bind(('127.0.0.1', 8080))
+    # server_socket.bind(('127.0.0.2', 8080))
     server_socket.bind(('0.0.0.0', 8080))
     server_socket.listen(1)
     print("Esperando conexión...")
@@ -82,12 +82,16 @@ def iniciar_servidor():
     print(f"Recibido v del cliente: {v}")
 
     # Calcular la clave compartida w = v^α (clave compartida)
-    key = key_change.generate_shared_secret(v)
-    print(f"Clave compartida generada: {key}")
+    w = key_change.generate_shared_secret(v)
+    print(f"Clave compartida generada: {w}")
+
+    key = Crypto_functions.KDF(w)
+    print(f"Llave definitiva: {key}")
 
     # Continuar con el manejo del cliente
     manejar_cliente(client_socket, key_change)
     server_socket.close()
+    print("server_socket cerrado")
 
 if __name__ == "__main__":
     iniciar_servidor()

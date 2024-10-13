@@ -4,6 +4,7 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import ChaCha20
 from Crypto.Cipher import Salsa20
 import random
+import hashlib
 
 class Diffie_Hellman:
     def __init__(self, p: int, q: int,  g: int):
@@ -32,10 +33,10 @@ class Diffie_Hellman:
     #     return self.public_key
 
     # Calcula la clave compartida usando la clave pública de la otra parte
-    def generate_shared_secret(self, other_public_key):
+    def generate_shared_secret(self, other_public_key: int) -> int:
         shared_key = self.mod_exp(other_public_key, self.alpha, self.p)
         # Convertimos el shared_key a bytes para ser usado como clave de cifrado
-        return shared_key.to_bytes(32, 'big')  # 32 bytes es lo típico para claves de cifrado
+        return shared_key  # 32 bytes es lo típico para claves de cifrado
 
 class Crypto_functions:
     # Clave de 16 bytes (128 bits), 24 bytes (192 bits) o 32 bytes (256 bits)
@@ -106,3 +107,14 @@ class Crypto_functions:
         texto_desencriptado = cipher.decrypt(texto_encriptado)
         return texto_desencriptado
 
+    def KDF(w, iterations = 1000, dklen= 32):
+        # Derivar la clave sin sal y con iteraciones mínimas
+        key = hashlib.pbkdf2_hmac(
+            'sha256',            # Algoritmo hash
+            w.to_bytes((w.bit_length() + 7) // 8, byteorder='big'),   # Contraseña en formato bytes
+            b'',                 # Sal vacía
+            iterations,          # Número de iteraciones (1000 o más es recomendable)
+            dklen=dklen          # Longitud de la clave derivada (32 bytes para Salsa20)
+        )
+
+        return key

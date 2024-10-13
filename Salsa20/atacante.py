@@ -1,5 +1,5 @@
 import yaml
-from funciones import Crypto_functions
+from Salsa20.Dif_Hel_2.funciones import Crypto_functions
 
 def leer_y_extraer_mensajes_yaml(ruta_archivo):
     with open(ruta_archivo, 'r') as file:

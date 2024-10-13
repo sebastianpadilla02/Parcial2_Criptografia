@@ -60,7 +60,7 @@ def iniciar_cliente():
     # Crear un socket para el cliente
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     #client_socket.connect(('172.20.10.2', 8080))  # Cambia por la IP del servidor
-    client_socket.connect(('127.0.0.2', 8080))  # Cambia por la IP del servidor
+    client_socket.connect(('127.0.0.1', 8080))  # Cambia por la IP del servidor
 
     # Esperar a recibir u del servidor
     u_bytes = client_socket.recv(1024)
@@ -72,8 +72,11 @@ def iniciar_cliente():
     client_socket.send(v.to_bytes((v.bit_length() + 7) // 8, 'big'))
 
     # Calcular la clave compartida w = u^β
-    key = key_diffie.generate_shared_secret(u)
-    print(f"Clave compartida generada: {key}")
+    w = key_diffie.generate_shared_secret(u)
+    print(f"Clave compartida generada: {w}")
+
+    key = Crypto_functions.KDF(w)
+    print(f"Llave definitiva: {key}")
 
     # Hilo para recibir mensajes del servidor
     thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))
