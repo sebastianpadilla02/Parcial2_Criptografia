@@ -1,6 +1,6 @@
 import socket
 import threading
-from funciones import Crypto_functions
+from funciones import Crypto_functions, Diffie_Hellman
 
 key = None  # Definir la clave como None inicialmente
 
@@ -43,17 +43,41 @@ def recibir_mensajes(client_socket):
 def iniciar_cliente():
     global key  # Hacer referencia a la variable global `key`
     
-    # Leer la clave desde un archivo
-    archivo_clave = 'key.bin'
-    key = leer_clave_desde_archivo(archivo_clave)
+    # # Leer la clave desde un archivo
+    # archivo_clave = 'key.bin'
+    # key = leer_clave_desde_archivo(archivo_clave)
     
-    if key is None:
-        print("No se pudo cargar la clave desde el archivo. Cerrando cliente.")
-        return
+    # if key is None:
+    #     print("No se pudo cargar la clave desde el archivo. Cerrando cliente.")
+    #     return
+
+    # Inicializar Diffie-Hellman
+    key_diffie = Diffie_Hellman()
+
+    V = key_diffie.U
 
     # Crear un socket para el cliente
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(('192.168.230.34', 8080)) # Conectar al servidor, necesario cambiar la IP para pruebas en diferentes equipos
+    client_socket.connect(('127.0.0.1', 8080))
+    # client_socket.connect(('192.168.230.34', 8080)) # Conectar al servidor, necesario cambiar la IP para pruebas en diferentes equipos
+
+    # Esperar a recibir U del servidor
+    U_bytes = client_socket.recv(1024)
+    print(f"Recibido U del servidor: {U_bytes}")
+
+    U = key_diffie.convert_bytes_to_key(U_bytes)
+
+    # Enviar V al servidor
+    V_bytes = key_diffie.public_key_to_bytes()
+    print(f"Enviando V al servidor: {V_bytes}")
+    client_socket.send(V_bytes)
+
+    # Calcular el secreto compartido W
+    W = key_diffie.generate_shared_secret(U)
+    print(f"Clave compartida generada: {W}")
+
+    key = Crypto_functions.KDF(W)
+    print(f"Llave definitiva: {key}")
 
     # Hilo para recibir mensajes del servidor
     thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))

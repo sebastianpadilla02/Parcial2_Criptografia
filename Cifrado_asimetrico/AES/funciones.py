@@ -3,6 +3,39 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import ChaCha20
 from Crypto.Cipher import Salsa20
+import random
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives import serialization
+
+class Diffie_Hellman:
+    def __init__(self):
+        self.alpha = self.generar_alpha()
+        self.U = self.generate_public_key()
+
+    def generar_alpha(self):
+        alpha = ec.generate_private_key(ec.SECP256R1(), default_backend())  # P256
+        return alpha
+    
+    def generate_public_key(self):
+        U = self.alpha.public_key()
+        return U
+
+    def public_key_to_bytes(self):
+        U_bytes = self.U.public_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        return U_bytes
+    
+    def convert_bytes_to_key(self, V):
+        return serialization.load_der_public_key(V, backend=default_backend())
+
+    # Calcula la clave compartida usando la clave pública de la otra parte
+    def generate_shared_secret(self, other_public_key):
+        return self.alpha.exchange(ec.ECDH(), other_public_key)
 
 class Crypto_functions:
     # Clave de 16 bytes (128 bits), 24 bytes (192 bits) o 32 bytes (256 bits)
@@ -72,3 +105,13 @@ class Crypto_functions:
         texto_desencriptado = cipher.decrypt(texto_encriptado)
         return texto_desencriptado
 
+    def KDF(w):
+        derived_key = HKDF(
+            algorithm=hashes.SHA256(),
+            length=32,  # Clave de 32 bytes (256 bits)
+            salt=None,
+            info=None,
+            backend=default_backend()
+        ).derive(w)
+
+        return derived_key
