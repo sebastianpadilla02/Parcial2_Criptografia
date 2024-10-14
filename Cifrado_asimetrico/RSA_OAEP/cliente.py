@@ -42,10 +42,17 @@ def iniciar_cliente():
     # Recibir la clave pública del servidor
     public_key_bytes = client_socket.recv(1024)
     public_key = criptosistema.importar(public_key_bytes)
-    criptosistema.public_key = public_key  # Actualizar la clave pública del servidor
+    # criptosistema.public_key = public_key  # Actualizar la clave pública del servidor
 
-    print(f'La llave publica recibida del servidor es: {criptosistema.public_key.export_key()}')
-    criptosistema.actualizar()  # Actualizar el cifrador para usar la clave pública del servidor
+    print(f'La llave pública recibida del servidor es: {public_key.export_key()}')
+    # criptosistema.actualizar()  # Actualizar el cifrador para usar la clave pública del servidor
+
+    # Enviar la clave pública del cliente al servidor
+    public_key_cliente_bytes = criptosistema.public_key.export_key()
+    client_socket.send(public_key_cliente_bytes)
+
+    criptosistema.public_key = public_key
+    criptosistema.actualizar()
 
     # Hilo para recibir mensajes del servidor
     thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))

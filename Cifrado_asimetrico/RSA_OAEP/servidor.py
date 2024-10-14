@@ -2,9 +2,10 @@ import socket
 from funciones import RSA_OAEP
 
 criptosistema = None  # Define key as None
+client_public_key = None  # Clave pública del cliente
 
 def manejar_cliente(client_socket):
-    global criptosistema
+    global criptosistema, client_public_key
 
     try:
         while True:
@@ -21,9 +22,12 @@ def manejar_cliente(client_socket):
             response = input("Servidor: ")
 
             # Cifrar la respuesta usando la clave pública del cliente
-            encriptar = criptosistema.encriptar(response.encode('utf-8'))
+            cifrador_cliente = RSA_OAEP()
+            cifrador_cliente.public_key = client_public_key
+            cifrador_cliente.actualizar()  # Actualizar el cifrador con la clave pública del cliente
+            encriptar = cifrador_cliente.encriptar(response.encode('utf-8'))
 
-            # Enviar el mensaje encriptado
+            # Enviar el mensaje encriptado al cliente
             client_socket.send(encriptar)
     except Exception as e:
         print(f"Error en enviar_recibir_mensajes: {e}")
@@ -31,7 +35,7 @@ def manejar_cliente(client_socket):
         client_socket.close()
 
 def iniciar_servidor():
-    global criptosistema
+    global criptosistema, client_public_key
 
     # Crear un socket para el servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,10 +54,17 @@ def iniciar_servidor():
 
     # Enviar la clave pública del servidor al cliente
     public_key_bytes = public_key.export_key()
-    print(f'La llave publica enviada es: {public_key_bytes}')
+    print(f'La llave pública enviada es: {public_key_bytes}')
     client_socket.send(public_key_bytes)
 
+    # Recibir la clave pública del cliente
+    client_public_key_bytes = client_socket.recv(1024)
+    client_public_key = criptosistema.importar(client_public_key_bytes)
+    print(f'Clave pública del cliente recibida: {client_public_key.export_key()}')
+
+    criptosistema.public_key = client_public_key
     criptosistema.actualizar()
+
     manejar_cliente(client_socket)
     server_socket.close()
 
