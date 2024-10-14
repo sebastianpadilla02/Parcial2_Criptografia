@@ -15,21 +15,22 @@ def desencriptado_AES(data, key, nombre):
     except Exception as e:
         print(f"Error al desencriptar el mensaje de {nombre}: {e}")
 
-# El adversario actúa como un intermediario entre Alice (servidor) y Bob (cliente)
+# El adversario actúa como un intermediario entre Servidor y Cliente
 def adversario():
-    # 1. Crear dos conexiones de socket
-    # Conexión a Alice (servidor)
-    alice_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    alice_socket.connect(('127.0.0.1', 8080))  # IP de Alice (servidor)
 
-    # Conexión a Bob (cliente)
+    # 1. Crear dos conexiones de socket
+    # Conexión a Servidor
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.connect(('127.0.0.1', 8080))  # IP de Servidor
+
+    # Conexión a Cliente
     bob_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    bob_socket.bind(('127.0.0.1', 8081))  # El adversario actuará como "servidor" para Bob
+    bob_socket.bind(('127.0.0.1', 8081))  # El adversario actuará como "servidor" para el Cliente
     bob_socket.listen(1)
-    print("Esperando conexión de Bob...")
+    print("Esperando conexión de Cliente...")
 
     client_socket, client_address = bob_socket.accept()
-    print(f"Conectado con Bob en {client_address}")
+    print(f"Conectado con Cliente en {client_address}")
 
     # Inicializar Diffie-Hellman del adversario
     dh_adversario_servidor = Diffie_Hellman()
@@ -37,106 +38,106 @@ def adversario():
 
     # 2. Interceptar y reemplazar las claves públicas
 
-    # Recibir U de Alice
-    U_bytes = alice_socket.recv(1024)
-    print(f"Interceptado U de Alice: {U_bytes}")
+    # Recibir U del Servidor
+    U_bytes = server_socket.recv(1024)
+    # print(f"Interceptado U de Servidor: {U_bytes}")
 
     # Convertir U a objeto clave pública
     U = dh_adversario_servidor.convert_bytes_to_key(U_bytes)
 
-    #Calcular V' y enviar a servidor(Alice)
+    # Calcular V' y enviar a Servidor
     V_prime = dh_adversario_servidor.public_key_to_bytes()
-    print(f"Enviando V al servidor: {V_prime}")
-    alice_socket.send(V_prime)
+    # print(f"Enviando V al servidor: {V_prime}")
+    server_socket.send(V_prime)
 
     # Generar la clave pública del adversario (U')
     U_prime = dh_adversario_cliente.U
     U_prime_bytes = dh_adversario_cliente.public_key_to_bytes()
 
-    # Enviar U' a Bob
-    print(f"Enviando U' a Bob: {U_prime_bytes}")
+    # Enviar U' a Cliente
+    # print(f"Enviando U' a Cliente: {U_prime_bytes}")
     client_socket.send(U_prime_bytes)
 
-    # Recibir V de Bob
+    # Recibir V de Cliente
     V_bytes = client_socket.recv(1024)
     print(f"Interceptado V de Bob: {V_bytes}")
 
     # Convertir V a objeto clave pública
     V = dh_adversario_cliente.convert_bytes_to_key(V_bytes)
 
-    # 3. Calcular los secretos compartidos con Alice y Bob
+    # 3. Calcular los secretos compartidos con el Cliente y el Servidor
 
-    # Clave compartida con Alice (W' = alpha * V')
+    # Clave compartida con Servidor (W' = alpha * V')
     shared_key_with_alice = dh_adversario_servidor.generate_shared_secret(U)
-    print(f"Clave compartida con Alice (W'): {shared_key_with_alice}")
+    # print(f"Clave compartida con Servidor (W'): {shared_key_with_alice}")
 
-    # Clave compartida con Bob (W = beta * U')
+    # Clave compartida con Cliente (W = beta * U')
     shared_key_with_bob = dh_adversario_cliente.generate_shared_secret(V)
-    print(f"Clave compartida con Bob (W): {shared_key_with_bob}")
+    # print(f"Clave compartida con Cliente (W): {shared_key_with_bob}")
 
     # Derivar claves simétricas a partir de los secretos compartidos
-    key_with_alice = Crypto_functions.KDF(shared_key_with_alice)
-    key_with_bob = Crypto_functions.KDF(shared_key_with_bob)
+    key_with_server = Crypto_functions.KDF(shared_key_with_alice)
+    key_with_client = Crypto_functions.KDF(shared_key_with_bob)
 
-    print(f"Clave simétrica con Alice: {key_with_alice}")
-    print(f"Clave simétrica con Bob: {key_with_bob}")
+    # print(f"Clave simétrica con Servidor: {key_with_server}")
+    # print(f"Clave simétrica con Cliente: {key_with_client}")
 
-    # Ahora, el adversario tiene claves simétricas con Alice y Bob y puede interceptar y modificar mensajes
+    # Ahora, el adversario tiene claves simétricas con Servidor y cliente, y puede interceptar y modificar mensajes
     while True:
-        # Interceptar mensajes de Bob
-        data_from_bob = client_socket.recv(1024)
-        if not data_from_bob:
+        # Interceptar mensajes del Cliente
+        data_from_client = client_socket.recv(1024)
+        if not data_from_client:
             break
 
-        desencriptado = desencriptado_AES(data_from_bob, key_with_bob, 'Bob')
-        print(f"Bob: {desencriptado} ", end='\n', flush=True)
+        desencriptado = desencriptado_AES(data_from_client, key_with_client, 'Cliente')
+        print(f"Cliente: {desencriptado} ", end='\n', flush=True)
 
         # Opción para modificar el mensaje interceptado o reenviar tal cual
-        mensaje_para_alice = input("\nAdversario: Ingresa el mensaje a enviar a Alice (o presiona Enter para reenviar el mensaje interceptado): ")
+        mensaje_para_server = input("Adversario: Ingresa el mensaje a enviar a Servidor (o presiona Enter para reenviar el mensaje interceptado): ")
 
-        if mensaje_para_alice.strip() == "":  # Si no se ingresa un mensaje, se reenvía el original de Bob
+        if mensaje_para_server.strip() == "":  # Si no se ingresa un mensaje, se reenvía el original del Cliente
             # Generar un nuevo nonce (IV) para el mensaje modificado
             iv = Crypto_functions.generar_iv_AES()
             # Encriptar el mensaje del adversario
-            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_alice, iv, desencriptado.encode('utf-8'))
-            # Enviar el nuevo mensaje modificado a Alice
-            alice_socket.send(iv + encriptado)
+            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_server, iv, desencriptado.encode('utf-8'))
+            # Enviar el mensaje a Servidor
+            server_socket.send(iv + encriptado)
         else:
             # Generar un nuevo nonce (IV) para el mensaje modificado
             iv = Crypto_functions.generar_iv_AES()
             # Encriptar el mensaje del adversario
-            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_alice, iv, mensaje_para_alice.encode('utf-8'))
-            # Enviar el nuevo mensaje modificado a Alice
-            alice_socket.send(iv + encriptado)
+            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_server, iv, mensaje_para_server.encode('utf-8'))
+            # Enviar el nuevo mensaje modificado a Servidor
+            server_socket.send(iv + encriptado)
 
-        # Interceptar mensajes de Alice
-        data_from_alice = alice_socket.recv(1024)
-        if not data_from_alice:
+        # Interceptar mensajes de Servidor
+        data_from_server = server_socket.recv(1024)
+        if not data_from_server:
             break
 
-        desencriptado2 = desencriptado_AES(data_from_alice, key_with_alice, 'Alice')
-        print(f"Alice: {desencriptado2} ", end='\n', flush=True)
+        desencriptado2 = desencriptado_AES(data_from_server, key_with_server, 'Servidor')
+        print(f"Servidor: {desencriptado2} ", end='\n', flush=True)
 
         # Opción para modificar el mensaje interceptado o reenviar tal cual
-        mensaje_para_bob = input("\nAdversario: Ingresa el mensaje a enviar a Bob (o presiona Enter para reenviar el mensaje interceptado): ")
+        mensaje_para_client = input("Adversario: Ingresa el mensaje a enviar a Cliente (o presiona Enter para reenviar el mensaje interceptado): ")
 
-        if mensaje_para_bob.strip() == "":  # Si no se ingresa un mensaje, se reenvía el original de Alice
+        if mensaje_para_client.strip() == "":  # Si no se ingresa un mensaje, se reenvía el original de Servidor
             # Generar un nuevo nonce (IV) para el mensaje modificado
             iv = Crypto_functions.generar_iv_AES()
             # Encriptar el mensaje del adversario
-            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_bob, iv, desencriptado2.encode('utf-8'))
-            # Enviar el nuevo mensaje modificado a Bob
+            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_client, iv, desencriptado2.encode('utf-8'))
+            # Enviar el nuevo mensaje a Cliente
             client_socket.send(iv + encriptado)
         else:
             # Generar un nuevo nonce (IV) para el mensaje modificado
             iv = Crypto_functions.generar_iv_AES()
             # Encriptar el mensaje del adversario
-            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_bob, iv, mensaje_para_bob.encode('utf-8'))
-            # Enviar el nuevo mensaje modificado a Bob
+            encriptado = Crypto_functions.AES_CBC_encrypt(key_with_client, iv, mensaje_para_client.encode('utf-8'))
+            # Enviar el nuevo mensaje modificado a Cliente
             client_socket.send(iv + encriptado)
 
     client_socket.close()
-    alice_socket.close()
+    server_socket.close()
 
 if __name__ == "__main__":
     adversario()
