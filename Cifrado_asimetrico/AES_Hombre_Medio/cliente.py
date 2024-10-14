@@ -61,7 +61,7 @@ def iniciar_cliente():
     client_socket.connect(('127.0.0.1', 8081))
     # client_socket.connect(('192.168.230.34', 8080)) # Conectar al servidor, necesario cambiar la IP para pruebas en diferentes equipos
 
-    # Esperar a recibir U del servidor
+    # Esperar a recibir U del servidor(ALICE)
     U_bytes = client_socket.recv(1024)
     print(f"Recibido U del servidor: {U_bytes}")
 
