@@ -1,6 +1,6 @@
 import socket
 import threading
-from funciones import RSA_OAEP
+from funciones import ElGamal_functions
 
 criptosistema = None  # Define key as None
 
@@ -35,7 +35,7 @@ def iniciar_cliente():
     client_socket.connect(('127.0.0.1', 8080))
 
     # Generar par de claves RSA para el cliente
-    criptosistema = RSA_OAEP()
+    criptosistema = ElGamal_functions()
     public_key_cliente = criptosistema.public_key
     private_key = criptosistema.private_key
 
