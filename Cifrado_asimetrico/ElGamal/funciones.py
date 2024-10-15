@@ -3,28 +3,79 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import ChaCha20
 from Crypto.Cipher import Salsa20
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import ElGamal
-from Crypto.Random import get_random_bytes
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.Hash import SHA256
+import random
+import hashlib
 
+class ElGamal:
+    def __init__(self, p: int, q: int,  g: int):
+        # Si no se proveen p y g, asignamos valores predeterminados (por ejemplo, para un grupo de Diffie-Hellman conocido)
+        self.p = p 
+        self.q = q
+        self.g = g
+        self.alpha = None
+        self.public_key = None
+        self.private_key = None
 
-class ElGamal_functions:
-    def __init__(self):
-        key = ElGamal.generate(1024, get_random_bytes)
-        self.private_key = key
-        self.public_key = key.publickey()
+    def GEG(self):
+        self.alpha = self.generar_alpha()
+        self.public_key = self.generate_public_key()
+        self.private_key = self.alpha
+        return self.public_key, self.private_key
 
-    def desencriptar(self, mensaje):
-        desencriptado = self.private_key.decrypt(mensaje)
-        return desencriptado
+    # Función para realizar la exponenciación modular
+    def mod_exp(self, base, exponent, mod):
+        return pow(base, exponent, mod)
 
-    def encriptar(self, mensaje):
-        encriptado = self.public_key.encrypt(mensaje, 32)
-        return encriptado
+    def generar_alpha(self) -> int:
+        # Generar un número aleatorio en el rango [2, q-1]
+        alpha = random.randrange(2, self.q)
+        return alpha
     
-    # def actualizar(self):
-    #     self.cifrador_publico = PKCS1_OAEP.new(self.public_key)
-    #     self.cifrador_privado = PKCS1_OAEP.new(self.private_key)
+    def generate_public_key(self):
+        u = self.mod_exp(self.g, self.alpha, self.p)
+        return u
+
+    def EEG(self, mensaje):
+        # Convertir el mensaje en un entero grande para cifrar
+        mensaje_entero = int.from_bytes(mensaje, 'big')
+
+        # Escoger un valor aleatorio para beta
+        beta = random.randint(2, self.q)  # Valor aleatorio para encriptar
+
+        # Calcular v = g^beta mod p
+        v = self.mod_exp(self.g, beta, self.p)
+
+        # Calcular w = pk^beta mod p
+        w = self.mod_exp(self.public_key, beta, self.p)
+
+        # Encriptar el mensaje (multiplicación mod p)
+        c = (mensaje_entero * w) % self.p
+
+        # Convertir v y c a bytes
+        v_bytes = v.to_bytes((v.bit_length() + 7) // 8, 'big')
+        c_bytes = c.to_bytes((c.bit_length() + 7) // 8, 'big')
+
+        # Concatenar v y c usando un delimitador
+        return v_bytes + b'|' + c_bytes
+
+    def DEG(self, data):
+        # Dividir los datos en v_bytes y c_bytes
+        v_bytes, c_bytes = data.split(b'|')
+
+        # Convertir de bytes a enteros
+        v = int.from_bytes(v_bytes, 'big')
+        c = int.from_bytes(c_bytes, 'big')
+
+        # Calcular w = v^sk mod p
+        w = self.mod_exp(v, self.private_key, self.p)
+
+        # Calcular w inverso (inverso modular de w)
+        w_inv = self.mod_exp(w, self.p-2, self.p)  # Usando teorema de Fermat
+
+        # Desencriptar el mensaje
+        mensaje_entero = (c * w_inv) % self.p
+
+        # Convertir el mensaje entero de nuevo a bytes
+        mensaje_bytes = mensaje_entero.to_bytes((mensaje_entero.bit_length() + 7) // 8, 'big')
+
+        return mensaje_bytes

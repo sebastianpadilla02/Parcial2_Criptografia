@@ -6,13 +6,21 @@ from Crypto.Cipher import Salsa20
 import random
 import hashlib
 
-class Diffie_Hellman:
+class ElGamal:
     def __init__(self, p: int, q: int,  g: int):
         # Si no se proveen p y g, asignamos valores predeterminados (por ejemplo, para un grupo de Diffie-Hellman conocido)
         self.p = p 
         self.q = q
         self.g = g
+        self.alpha = None
+        self.public_key = None
+        self.private_key = None
+
+    def GEG(self):
         self.alpha = self.generar_alpha()
+        self.public_key = self.generate_public_key()
+        self.private_key = self.alpha
+        return self.public_key, self.private_key
 
     # Función para realizar la exponenciación modular
     def mod_exp(self, base, exponent, mod):
@@ -27,94 +35,54 @@ class Diffie_Hellman:
         u = self.mod_exp(self.g, self.alpha, self.p)
         return u
 
-    # # Genera la clave pública
-    # def generate_public_key(self):
-    #     self.public_key = self.mod_exp(self.g, int.from_bytes(self.private_key, 'big'), self.p)
-    #     return self.public_key
+    # Función EEG: Encriptar el mensaje
+    def EEG(self, mensaje):
+        # Escoger un valor aleatorio para beta
+        beta = random.randint(2, self.q)  # Valor aleatorio para encriptar
 
-    # Calcula la clave compartida usando la clave pública de la otra parte
-    def generate_shared_secret(self, other_public_key: int) -> int:
-        shared_key = self.mod_exp(other_public_key, self.alpha, self.p)
-        # Convertimos el shared_key a bytes para ser usado como clave de cifrado
-        return shared_key  # 32 bytes es lo típico para claves de cifrado
+        # Calcular v = g^beta mod p
+        v = self.mod_exp(self.g, beta, self.p)
 
-class Crypto_functions:
-    # Clave de 16 bytes (128 bits), 24 bytes (192 bits) o 32 bytes (256 bits)
-    def generar_clave_AES() -> bytes:
-        clave = get_random_bytes(32)
-        return clave
+        # Calcular w = pk^beta mod p
+        w = self.mod_exp(self.public_key, beta, self.p)
 
-    def generar_nonce() -> bytes:
-        nonce = get_random_bytes(8)
-        return nonce
+        # Encriptar el mensaje m (multiplicación mod p)
+        c = (mensaje * w) % self.p
 
-    # IV de 16 bytes (128 bits) o 8 bytes (64 bits) para AES y ChaCha20 respectivamente 
-    def generar_IV_AES(tamano_IV: int) -> bytes:
-        IV = get_random_bytes(tamano_IV)
-        return IV
+        # Retornar el par (v, c)
+        return v, c
 
-    def AES_ECB_encrypt(key, texto_original):
-        cipher = AES.new(key, AES.MODE_ECB)
-        texto_padded = pad(texto_original, AES.block_size)
-        texto_encriptado = cipher.encrypt(texto_padded)
-        return texto_encriptado
+    def DEG(self, v, c):
 
-    def AES_ECB_decrypt(key, texto_encriptado):
-        cipher = AES.new(key, AES.MODE_ECB)
-        texto_desencriptado = cipher.decrypt(texto_encriptado)
-        texto_desencriptado = unpad(texto_desencriptado, AES.block_size)
-        return texto_desencriptado
+        #Necesito separar v y c de mensaje_c
 
-    def AES_CBC_encrypt(key, iv, texto_original):
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        texto_padded = pad(texto_original, AES.block_size)
-        texto_encriptado = cipher.encrypt(texto_padded)
-        return texto_encriptado
+        w = self.mod_exp(v, self.private_key, self.p)
 
-    def AES_CBC_decrypt(key, iv, texto_encriptado):
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        texto_desencriptado = cipher.decrypt(texto_encriptado)
-        texto_desencriptado = unpad(texto_desencriptado, AES.block_size)
-        return texto_desencriptado
+        # Calcular w inverso (inverso modular de w)
+        w_inv = self.mod_exp(w, self.p-2, self.p)  # Usando teorema de Fermat
 
-    def AES_CTR_encrypt(key, iv, texto_original):
-        cipher = AES.new(key, AES.MODE_CTR, nonce=iv)
-        texto_encriptado = cipher.encrypt(texto_original)
-        return texto_encriptado
+        m = (c * w_inv) % self.p
 
-    def AES_CTR_decrypt(key, iv, texto_encriptado):
-        cipher = AES.new(key, AES.MODE_CTR, nonce=iv)
-        texto_desencriptado = cipher.decrypt(texto_encriptado)
-        return texto_desencriptado
+        return m
+    
 
-    def ChaCha20_encrypt(key, iv, texto_original):
-        cipher = ChaCha20.new(key=key, nonce=iv)
-        texto_encriptado = cipher.encrypt(texto_original)
-        return texto_encriptado
+# Ejemplo de uso:
+if __name__ == "__main__":
 
-    def ChaCha20_decrypt(key, iv, texto_encriptado):
-        cipher = ChaCha20.new(key=key, nonce=iv)
-        texto_desencriptado = cipher.decrypt(texto_encriptado)
-        return texto_desencriptado
+    criptosistema = ElGamal(227, 113, 12)
+    # Generar las claves
+    pk, sk = criptosistema.GEG()
+    print(f"Clave pública (pk): {pk}")
+    print(f"Clave privada (sk): {sk}")
 
-    def Salsa20_encrypt(key, iv, texto_original):
-        cipher = Salsa20.new(key=key, nonce=iv)
-        texto_encriptado = cipher.encrypt(texto_original)
-        return texto_encriptado
+    # Mensaje a encriptar
+    mensaje = 15  # Un número entero como mensaje
+    print(f"Mensaje original: {mensaje}")
 
-    def Salsa20_decrypt(key, iv, texto_encriptado):
-        cipher = Salsa20.new(key=key, nonce=iv)
-        texto_desencriptado = cipher.decrypt(texto_encriptado)
-        return texto_desencriptado
+    # Encriptar el mensaje
+    v, c = criptosistema.EEG(mensaje)
+    print(f"Mensaje cifrado: v = {v}, c = {c}")
 
-    def KDF(w, iterations = 1000, dklen= 32):
-        # Derivar la clave sin sal y con iteraciones mínimas
-        key = hashlib.pbkdf2_hmac(
-            'sha256',            # Algoritmo hash
-            w.to_bytes((w.bit_length() + 7) // 8, byteorder='big'),   # Contraseña en formato bytes
-            b'',                 # Sal vacía
-            iterations,          # Número de iteraciones (1000 o más es recomendable)
-            dklen=dklen          # Longitud de la clave derivada (32 bytes para Salsa20)
-        )
-
-        return key
+    # Desencriptar el mensaje
+    mensaje_descifrado = criptosistema.DEG(v, c)
+    print(f"Mensaje descifrado: {mensaje_descifrado}")

@@ -1,6 +1,6 @@
 import socket
 import threading
-from funciones import ElGamal_functions
+from funciones import ElGamal
 
 criptosistema = None  # Define key as None
 
@@ -14,7 +14,7 @@ def recibir_mensajes(client_socket):
                 break
 
             # Desencriptar el mensaje con la clave privada del cliente
-            desencriptado = criptosistema.desencriptar(data)
+            desencriptado = criptosistema.DEG(data)
 
             # Limpiar la línea de entrada del cliente para evitar interferencias
             print("\r" + " " * 80, end="")  # Borrar la línea actual
@@ -34,25 +34,20 @@ def iniciar_cliente():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(('127.0.0.1', 8080))
 
-    # Generar par de claves RSA para el cliente
-    criptosistema = ElGamal_functions()
-    public_key_cliente = criptosistema.public_key
-    private_key = criptosistema.private_key
+    # Generar par de claves ElGamal para el cliente
+    criptosistema = ElGamal(227, 113, 12)  # Ajusta los valores de p, q, g según corresponda
+    public_key, private_key = criptosistema.GEG()
 
     # Recibir la clave pública del servidor
-    public_key_bytes = client_socket.recv(1024)
-    public_key = criptosistema.importar(public_key_bytes)
-    # criptosistema.public_key = public_key  # Actualizar la clave pública del servidor
-
-    # print(f'La llave pública recibida del servidor es: {public_key.export_key()}')
-    # criptosistema.actualizar()  # Actualizar el cifrador para usar la clave pública del servidor
+    server_public_key_bytes = client_socket.recv(1024)
+    server_public_key = int.from_bytes(server_public_key_bytes, 'big')
+    print(f'pk recibida del servidor: {server_public_key}')
 
     # Enviar la clave pública del cliente al servidor
-    public_key_cliente_bytes = criptosistema.public_key.export_key()
-    client_socket.send(public_key_cliente_bytes)
+    print(f"Enviando pk al servidor: {public_key}")
+    client_socket.send(public_key.to_bytes((public_key.bit_length() + 7) // 8, 'big'))
 
-    criptosistema.public_key = public_key
-    criptosistema.actualizar()
+    criptosistema.public_key = server_public_key
 
     # Hilo para recibir mensajes del servidor
     thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))
@@ -69,7 +64,7 @@ def iniciar_cliente():
                 break
 
             # Cifrar el mensaje con la clave pública del servidor
-            encriptar = criptosistema.encriptar(message.encode('utf-8'))
+            encriptar = criptosistema.EEG(message.encode('utf-8'))
 
             # Enviar el mensaje cifrado
             client_socket.send(encriptar)
@@ -77,6 +72,7 @@ def iniciar_cliente():
             print(f"Error al enviar mensaje: {e}")
             client_socket.close()
             break
+
 
 if __name__ == "__main__":
     iniciar_cliente()

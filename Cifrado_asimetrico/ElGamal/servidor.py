@@ -1,5 +1,5 @@
 import socket
-from funciones import ElGamal_functions
+from funciones import ElGamal
 
 criptosistema = None  # Define key as None
 client_public_key = None  # Clave pública del cliente
@@ -15,17 +15,14 @@ def manejar_cliente(client_socket):
                 break
 
             # Desencriptar el mensaje usando la clave privada del servidor
-            desencriptar = criptosistema.desencriptar(data)
+            desencriptar = criptosistema.DEG(data)
             print(f"Cliente: {desencriptar.decode('utf-8')}")
 
             # Enviar respuesta al cliente
             response = input("Servidor: ")
 
             # Cifrar la respuesta usando la clave pública del cliente
-            cifrador_cliente = RSA_OAEP()
-            cifrador_cliente.public_key = client_public_key
-            cifrador_cliente.actualizar()  # Actualizar el cifrador con la clave pública del cliente
-            encriptar = cifrador_cliente.encriptar(response.encode('utf-8'))
+            encriptar = criptosistema.EEG(response.encode('utf-8'))
 
             # Enviar el mensaje encriptado al cliente
             client_socket.send(encriptar)
@@ -47,24 +44,19 @@ def iniciar_servidor():
     client_socket, client_address = server_socket.accept()
     print(f"Conectado con {client_address}")
 
-    # Generar par de claves RSA para el servidor
-    criptosistema = ElGamal_functions()
-    public_key = criptosistema.public_key
-    private_key = criptosistema.private_key
+    # Generar el criptosistema y el par de llaves para el servidor
+    criptosistema = ElGamal(227, 113, 12)  # Ajusta los valores de p, q, g según corresponda
+    public_key, private_key = criptosistema.GEG()
 
-    # Enviar la clave pública del servidor al cliente
-    public_key_bytes = public_key.export_key()
-    print(type(public_key_bytes))
-    # print(f'La llave pública enviada es: {public_key_bytes}')
-    client_socket.send(public_key_bytes)
+    print(f"Enviando pk al cliente: {public_key}")
+    client_socket.send(public_key.to_bytes((public_key.bit_length() + 7) // 8, 'big'))
 
     # Recibir la clave pública del cliente
     client_public_key_bytes = client_socket.recv(1024)
-    client_public_key = criptosistema.importar(client_public_key_bytes)
-    # print(f'Clave pública del cliente recibida: {client_public_key.export_key()}')
+    client_public_key = int.from_bytes(client_public_key_bytes, 'big')
+    print(f'pk recibida del cliente; {client_public_key}')
 
     criptosistema.public_key = client_public_key
-    criptosistema.actualizar()
 
     manejar_cliente(client_socket)
     server_socket.close()
