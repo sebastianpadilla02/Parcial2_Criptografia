@@ -86,7 +86,7 @@ g = param_set["g"]
 print(f"Conjunto seleccionado: p={p}, q={q}, g={g}")
 
 # Ruta del archivo YAML
-ruta_archivo_yaml = 'data.yaml'  # Cambia esto con la ruta correcta
+ruta_archivo_yaml = 'Diffie1.yaml'  # Cambia esto con la ruta correcta
 
 # Leer y extraer mensajes del archivo YAML
 leer_y_extraer_mensajes_yaml(ruta_archivo_yaml, p, q ,g)
