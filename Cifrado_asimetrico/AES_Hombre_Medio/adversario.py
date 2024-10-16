@@ -60,7 +60,7 @@ def adversario():
 
     # Recibir V de Cliente
     V_bytes = client_socket.recv(1024)
-    print(f"Interceptado V de Bob: {V_bytes}")
+    # print(f"Interceptado V de Bob: {V_bytes}")
 
     # Convertir V a objeto clave pública
     V = dh_adversario_cliente.convert_bytes_to_key(V_bytes)

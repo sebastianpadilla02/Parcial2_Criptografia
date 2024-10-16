@@ -59,22 +59,22 @@ def iniciar_servidor():
     U = key_change.U
 
     U_bytes = key_change.public_key_to_bytes()
-    print(f"Enviando u al cliente: {U_bytes}")
+    # print(f"Enviando u al cliente: {U_bytes}")
 
     client_socket.send(U_bytes)
 
     # Esperar el valor V del cliente
     V_bytes = client_socket.recv(1024)
-    print(f"Recibido V del cliente: {V_bytes}")
+    # print(f"Recibido V del cliente: {V_bytes}")
 
     V = key_change.convert_bytes_to_key(V_bytes)
 
     # 6. Calcular el secreto compartido W = alpha * V (clave pública de Bob)
     W = key_change.generate_shared_secret(V)
-    print(f"Clave compartida generada: {W}")
+    # print(f"Clave compartida generada: {W}")
 
     key = Crypto_functions.KDF(W)
-    print(f"Llave definitiva: {key}")
+    # print(f"Llave definitiva: {key}")
 
     # # Guardar la clave en un archivo binario
     # with open('key.bin', 'wb') as file:

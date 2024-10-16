@@ -27,11 +27,6 @@ class Diffie_Hellman:
         u = self.mod_exp(self.g, self.alpha, self.p)
         return u
 
-    # # Genera la clave pública
-    # def generate_public_key(self):
-    #     self.public_key = self.mod_exp(self.g, int.from_bytes(self.private_key, 'big'), self.p)
-    #     return self.public_key
-
     # Calcula la clave compartida usando la clave pública de la otra parte
     def generate_shared_secret(self, other_public_key: int) -> int:
         shared_key = self.mod_exp(other_public_key, self.alpha, self.p)

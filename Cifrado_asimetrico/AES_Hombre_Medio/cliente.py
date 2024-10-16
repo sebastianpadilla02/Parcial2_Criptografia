@@ -33,7 +33,8 @@ def recibir_mensajes(client_socket):
             desencriptado = Crypto_functions.AES_CBC_decrypt(key, iv, encrypted_message)
 
             # Limpiar la línea de entrada del cliente para evitar interferencias, e imprimir el mensaje del servidor
-            print(f"\nServidor: {desencriptado.decode('utf-8')}\nCliente: ", end='', flush=True)
+            print(f"\rServidor: {desencriptado.decode('utf-8')}")
+            print("Cliente: ", end="", flush=True)
     except Exception as e:
         print(f"Error en recibir_mensajes: {e}")
     finally:
@@ -42,14 +43,6 @@ def recibir_mensajes(client_socket):
 
 def iniciar_cliente():
     global key  # Hacer referencia a la variable global `key`
-    
-    # # Leer la clave desde un archivo
-    # archivo_clave = 'key.bin'
-    # key = leer_clave_desde_archivo(archivo_clave)
-    
-    # if key is None:
-    #     print("No se pudo cargar la clave desde el archivo. Cerrando cliente.")
-    #     return
 
     # Inicializar Diffie-Hellman
     key_diffie = Diffie_Hellman()
@@ -63,21 +56,21 @@ def iniciar_cliente():
 
     # Esperar a recibir U del servidor(ALICE)
     U_bytes = client_socket.recv(1024)
-    print(f"Recibido U del servidor: {U_bytes}")
+    # print(f"Recibido U del servidor: {U_bytes}")
 
     U = key_diffie.convert_bytes_to_key(U_bytes)
 
     # Enviar V al servidor
     V_bytes = key_diffie.public_key_to_bytes()
-    print(f"Enviando V al servidor: {V_bytes}")
+    # print(f"Enviando V al servidor: {V_bytes}")
     client_socket.send(V_bytes)
 
     # Calcular el secreto compartido W
     W = key_diffie.generate_shared_secret(U)
-    print(f"Clave compartida generada: {W}")
+    # print(f"Clave compartida generada: {W}")
 
     key = Crypto_functions.KDF(W)
-    print(f"Llave definitiva: {key}")
+    # print(f"Llave definitiva: {key}")
 
     # Hilo para recibir mensajes del servidor
     thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))

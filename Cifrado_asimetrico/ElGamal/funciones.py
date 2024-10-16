@@ -1,10 +1,4 @@
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
-from Crypto.Random import get_random_bytes
-from Crypto.Cipher import ChaCha20
-from Crypto.Cipher import Salsa20
 import random
-import hashlib
 
 class ElGamal:
     def __init__(self, p: int, q: int, g: int):

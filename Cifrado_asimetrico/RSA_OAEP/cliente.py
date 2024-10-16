@@ -17,7 +17,7 @@ def recibir_mensajes(client_socket):
             desencriptado = criptosistema.desencriptar(data)
 
             # Limpiar la línea de entrada del cliente para evitar interferencias
-            print("\r" + " " * 80, end="")  # Borrar la línea actual
+            # print("\r" + " " * 80, end="")  # Borrar la línea actual
             print(f"\rServidor: {desencriptado.decode('utf-8')}")  # Imprimir mensaje del servidor
 
             # Volver a mostrar el prompt para el cliente

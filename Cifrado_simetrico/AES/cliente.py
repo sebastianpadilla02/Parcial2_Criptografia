@@ -33,7 +33,8 @@ def recibir_mensajes(client_socket):
             desencriptado = Crypto_functions.AES_CBC_decrypt(key, iv, encrypted_message)
 
             # Limpiar la línea de entrada del cliente para evitar interferencias, e imprimir el mensaje del servidor
-            print(f"\nServidor: {desencriptado.decode('utf-8')}\nCliente: ", end='', flush=True)
+            print(f"\rServidor: {desencriptado.decode('utf-8')}")
+            print("Cliente: ", end="", flush=True)
     except Exception as e:
         print(f"Error en recibir_mensajes: {e}")
     finally:
