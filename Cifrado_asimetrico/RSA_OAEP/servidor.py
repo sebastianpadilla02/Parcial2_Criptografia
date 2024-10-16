@@ -2,10 +2,9 @@ import socket
 from funciones import RSA_OAEP
 
 criptosistema = None  # Define key as None
-client_public_key = None  # Clave pública del cliente
 
 def manejar_cliente(client_socket):
-    global criptosistema, client_public_key
+    global criptosistema
 
     try:
         while True:
@@ -35,7 +34,7 @@ def manejar_cliente(client_socket):
         client_socket.close()
 
 def iniciar_servidor():
-    global criptosistema, client_public_key
+    global criptosistema
 
     # Crear un socket para el servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

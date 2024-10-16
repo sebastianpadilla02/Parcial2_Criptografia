@@ -6,7 +6,7 @@ from funciones import Crypto_functions, Diffie_Hellman
 
 key = None  # Define key as None
 
-def manejar_cliente(client_socket, key_change):
+def manejar_cliente(client_socket):
     global key
 
     try:
@@ -89,7 +89,7 @@ def iniciar_servidor():
     # print(f"Llave definitiva: {key}")
 
     # Continuar con el manejo del cliente
-    manejar_cliente(client_socket, key_change)
+    manejar_cliente(client_socket)
     server_socket.close()
     print("server_socket cerrado")
 

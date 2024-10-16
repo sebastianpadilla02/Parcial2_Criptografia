@@ -22,7 +22,6 @@ def recibir_mensajes(client_socket):
             desencriptado = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
 
             # Limpiar la línea de entrada del cliente para evitar interferencias
-            print("\r" + " " * 80, end="")  # Borrar la línea actual
             print(f"\rServidor: {desencriptado.decode('utf-8')}")  # Imprimir mensaje del servidor
 
             # Volver a mostrar el prompt para el cliente
