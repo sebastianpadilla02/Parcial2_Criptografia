@@ -4,7 +4,6 @@ import threading
 from funciones import Crypto_functions, Diffie_Hellman
 
 key = None  # Define key as None
-u = None  # Para almacenar el valor recibido del servidor
 
 def recibir_mensajes(client_socket):
     global key
@@ -35,7 +34,7 @@ def recibir_mensajes(client_socket):
 
 
 def iniciar_cliente():
-    global key, u  # Hacer referencia a las variables globales
+    global key # Hacer referencia a las variables globales
 
     # Cargar el archivo JSON con los parámetros p, q, g
     with open('parameters.json') as f:
@@ -49,7 +48,7 @@ def iniciar_cliente():
     q = param_set["q"]
     g = param_set["g"]
 
-    print(f"Conjunto seleccionado: p={p}, q={q}, g={g}")
+    # print(f"Conjunto seleccionado: p={p}, q={q}, g={g}")
 
     # Inicializar Diffie-Hellman con los parámetros p y g
     key_diffie = Diffie_Hellman(p, q, g)
@@ -65,18 +64,18 @@ def iniciar_cliente():
     # Esperar a recibir u del servidor
     u_bytes = client_socket.recv(1024)
     u = int.from_bytes(u_bytes, 'big')
-    print(f"Recibido u del servidor: {u}")
+    # print(f"Recibido u del servidor: {u}")
 
     # Enviar v al servidor
-    print(f"Enviando v al servidor: {v}")
+    # print(f"Enviando v al servidor: {v}")
     client_socket.send(v.to_bytes((v.bit_length() + 7) // 8, 'big'))
 
     # Calcular la clave compartida w = u^β
     w = key_diffie.generate_shared_secret(u)
-    print(f"Clave compartida generada: {w}")
+    # print(f"Clave compartida generada: {w}")
 
     key = Crypto_functions.KDF(w)
-    print(f"Llave definitiva: {key}")
+    # print(f"Llave definitiva: {key}")
 
     # Hilo para recibir mensajes del servidor
     thread = threading.Thread(target=recibir_mensajes, args=(client_socket,))
@@ -84,11 +83,6 @@ def iniciar_cliente():
     thread.start()
 
     while True:
-        # Verificar que se haya calculado la clave antes de enviar un mensaje
-        # if key is None:
-        #     print("Esperando la clave compartida...")
-        #     continue
-
         # Enviar mensaje al servidor
         try:
             message = input("Cliente: ")

@@ -6,7 +6,7 @@ from funciones import Crypto_functions, Diffie_Hellman
 
 key = None  # Define key as None
 
-def manejar_cliente(client_socket, key_change):
+def manejar_cliente(client_socket):
     global key
 
     try:
@@ -64,7 +64,7 @@ def iniciar_servidor():
     q = param_set["q"]
     g = param_set["g"]
 
-    print(f"Conjunto seleccionado: p={p}, q={q}, g={g}")
+    # print(f"Conjunto seleccionado: p={p}, q={q}, g={g}")
 
     # Iniciar Diffie-Hellman con los parámetros p y g
     key_change = Diffie_Hellman(p, q, g)
@@ -73,23 +73,23 @@ def iniciar_servidor():
     u = key_change.generate_public_key()
 
     # Enviar u al cliente
-    print(f"Enviando u al cliente: {u}")
+    # print(f"Enviando u al cliente: {u}")
     client_socket.send(u.to_bytes((u.bit_length() + 7) // 8, 'big'))
 
     # Esperar el valor v = g^β del cliente
     v_bytes = client_socket.recv(1024)
     v = int.from_bytes(v_bytes, 'big')
-    print(f"Recibido v del cliente: {v}")
+    # print(f"Recibido v del cliente: {v}")
 
     # Calcular la clave compartida w = v^α (clave compartida)
     w = key_change.generate_shared_secret(v)
-    print(f"Clave compartida generada: {w}")
+    # print(f"Clave compartida generada: {w}")
 
     key = Crypto_functions.KDF(w)
-    print(f"Llave definitiva: {key}")
+    # print(f"Llave definitiva: {key}")
 
     # Continuar con el manejo del cliente
-    manejar_cliente(client_socket, key_change)
+    manejar_cliente(client_socket)
     server_socket.close()
     print("server_socket cerrado")
 
