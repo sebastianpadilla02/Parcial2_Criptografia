@@ -2,6 +2,7 @@ import yaml
 from funciones import Crypto_functions, Diffie_Hellman
 import json
 import math
+import base64
 
 y = None
 
@@ -28,48 +29,68 @@ def pasos_bebe_pasos_gigante(g, y, p):  #g:Generador conocido, y: u o v capturad
     return None
 
 
+import base64
+
 def leer_y_extraer_mensajes_yaml(ruta_archivo, p, q, g):
     with open(ruta_archivo, 'r') as file:
         contenido_yaml = yaml.safe_load(file)  # Leer y cargar el archivo YAML
 
     publico = False
     privado = False
+    key = None
+
     # Iterar sobre los paquetes y extraer los datos
     for packet in contenido_yaml['packets']:
-        datos_base64 = packet['data']  # Extraer el dato en base64
-        if(publico == False):
-            u = datos_base64
-            publico = True
 
-            x = pasos_bebe_pasos_gigante(g, u, p)
-            if(x == None):
-                print("No se pudo encontrar el valor de alpha")
-                return None
-            
+        datos_base64 = packet['data']  # Extraer el dato en base64
+
+        try:
+            # print(f"datos base 64: {datos_base64}")
+
+            if not publico:
+                # Convertir los datos de bytes a entero para 'u'
+                u = int.from_bytes(datos_base64, 'big')
+                publico = True
+
+                # Usar el valor de 'u' en el algoritmo de pasos de bebé y gigante
+                x = pasos_bebe_pasos_gigante(g, u, p)
+                if x is None:
+                    print("No se pudo encontrar el valor de alpha")
+                    return None
+                
+                continue
+
+            if not privado:
+                key_diffie2 = Diffie_Hellman(p, q, g)
+                key_diffie2.alpha = x
+
+                # Convertir los datos de bytes a entero para 'v'
+                v = int.from_bytes(datos_base64, 'big')
+
+                # Calcular la clave compartida w = u^β
+                w = key_diffie2.generate_shared_secret(v)
+                print(f"Clave compartida generada: {w}")
+
+                key = Crypto_functions.KDF(w)
+                print(f"Llave definitiva: {key}")
+                privado = True
+                continue
+
+            # Extraer el nonce del mensaje (asumimos que son los primeros 8 bytes)
+            nonce = datos_base64[:8]  # El nonce es de 8 bytes
+            encrypted_message = datos_base64[8:]  # El mensaje cifrado es el resto
+
+            # Desencriptar el mensaje
+            desencriptado = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
+            if packet['peer'] == 1:
+                print(f"Servidor: {desencriptado.decode('utf-8')}")
+            else:
+                print(f"Cliente: {desencriptado.decode('utf-8')}")
+        
+        except Exception as e:
+            print(f"Error al procesar el paquete: {e}")
             continue
 
-        if (privado == False):
-            key_diffie2 = Diffie_Hellman(p, q, g)
-            key_diffie2.alpha = x
-            v = datos_base64
-            # Calcular la clave compartida w = u^β
-            w = key_diffie2.generate_shared_secret(v)
-            print(f"Clave compartida generada: {w}")
-
-            key = Crypto_functions.KDF(w)
-            print(f"Llave definitiva: {key}")
-            privado = True
-            
-        # Extraer el nonce del mensaje
-        nonce = datos_base64[:8]  # Asumimos que el nonce es de 8 bytes
-        encrypted_message = datos_base64[8:]
-
-        # Desencriptar el mensaje
-        desencriptado = Crypto_functions.Salsa20_decrypt(key, nonce, encrypted_message)
-        if(packet['peer'] == 1):
-            print(f"Servidor: {desencriptado.decode('utf-8')}")
-        else:
-            print(f"Cliente: {desencriptado.decode('utf-8')}")
             
 # Cargar el archivo JSON con los parámetros p, q, g
 with open('parameters.json') as f:
