@@ -1,6 +1,7 @@
 import socket
 import threading
 from funciones import ElGamal
+import json
 
 criptosistema = None  # Define key as None
 
@@ -37,6 +38,16 @@ def iniciar_cliente():
     # Crear un socket para el cliente
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(('127.0.0.1', 8080))
+
+    data = client_socket.recv(4096)  # Ajusta el tamaño del buffer si es necesario
+    json_data = data.decode('utf-8')
+
+    # Convertir la cadena JSON en un diccionario
+    parametros = json.loads(json_data)
+
+    # Guardar el archivo JSON en la carpeta del cliente
+    with open('parameters_recibidos.json', 'w') as f:
+        json.dump(parametros, f, indent=4)  # Guardar con formato (indentación)
 
     # Generar par de claves ElGamal para el cliente
     criptosistema = ElGamal('parametros.json')

@@ -25,7 +25,7 @@ def adversario():
 
     # Conexión a Cliente
     bob_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    bob_socket.bind(('127.0.0.1', 8081))  # El adversario actuará como "servidor" para el Cliente
+    bob_socket.bind(('0.0.0.0', 8081))  # El adversario actuará como "servidor" para el Cliente
     bob_socket.listen(1)
     print("Esperando conexión de Cliente...")
 

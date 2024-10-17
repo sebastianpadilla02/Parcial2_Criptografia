@@ -1,6 +1,7 @@
 import socket
 from funciones import ElGamal
 from parametros import Parametros
+import json
 
 criptosistema = None  # Define key as None
 client_public_key = None  # Clave pública del cliente
@@ -57,6 +58,15 @@ def iniciar_servidor():
 
     Parametros(1024)
     criptosistema = ElGamal('parametros.json')
+
+    with open('parametros.json', 'r') as f:
+        data = json.load(f)
+
+    # Convertir el JSON en bytes
+    json_data = json.dumps(data).encode('utf-8')
+
+    # Enviar el archivo JSON
+    client_socket.send(json_data)
 
     public_key, private_key = criptosistema.GEG()
 
