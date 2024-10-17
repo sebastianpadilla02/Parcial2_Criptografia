@@ -1,0 +1,54 @@
+peers:
+  - peer: 0
+    host: 10.20.53.61
+    port: 60593
+  - peer: 1
+    host: 10.20.62.45
+    port: 8080
+packets:
+  - packet: 92
+    peer: 1
+    index: 0
+    timestamp: 1729128094.006273000
+    data: !!binary |
+      NiBvVy6KeE5wcNfFepC/sH5lypixZ7Eve3n55XmmM+NDPCHCpszAni5NsxH8axQ24+au4X/1yMOD
+      G21weiv9nWuloavWmpgS1l3p7EOepHUN4LmEmKP5uZpz/vH1p+QQ0HLT6lBzDQV9Z+fk0kbUznzN
+      3RnYYPLut5oiKlYJfek=
+  - packet: 93
+    peer: 0
+    index: 0
+    timestamp: 1729128094.094196000
+    data: !!binary |
+      WyLUW+IBZM3Us+b8RJET3gAHkIPQp7cGDZ98eyeJpzc5n21Yiy69N6l6OJb1MehBiecV1GdScYSO
+      dnvIM2A3lyegRQbX9OKxfPxGEGAQjg6OQZs8eDrjuueNVR+YJtFeL2Amb8d/MH3D9l+hnWGj+rtn
+      vGhl3+q9+LdcabpZBv4=
+  - packet: 247
+    peer: 0
+    index: 1
+    timestamp: 1729128104.457865000
+    data: !!binary |
+      9htv9dBUMZOCPwnM/+Cf8SN+Tk4sLg==
+  - packet: 303
+    peer: 1
+    index: 1
+    timestamp: 1729128109.959912000
+    data: !!binary |
+      tiLxJv/JxhFwGkKOJLqju7qcp22ingo=
+  - packet: 328
+    peer: 0
+    index: 2
+    timestamp: 1729128116.171025000
+    data: !!binary |
+      gLcNHFGZAGV1l2GSkAnTJ7I=
+  - packet: 334
+    peer: 1
+    index: 2
+    timestamp: 1729128124.228489000
+    data: !!binary |
+      Ys2uC5FoFFUYlEJEWSizOFYQmUtGt5O/Sw==
+  - packet: 344
+    peer: 0
+    index: 3
+    timestamp: 1729128128.372454000
+    data: !!binary |
+      HGWeJktSSE+Lcjj0VYP7Ug==

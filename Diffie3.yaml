@@ -1,0 +1,44 @@
+peers:
+  - peer: 0
+    host: 10.20.53.61
+    port: 60436
+  - peer: 1
+    host: 10.20.62.45
+    port: 8080
+packets:
+  - packet: 285
+    peer: 1
+    index: 0
+    timestamp: 1729127128.152338000
+    data: !!binary |
+      GT1K
+  - packet: 286
+    peer: 0
+    index: 0
+    timestamp: 1729127128.156505000
+    data: !!binary |
+      uUik
+  - packet: 295
+    peer: 0
+    index: 1
+    timestamp: 1729127133.385132000
+    data: !!binary |
+      iNcxm7G/4JVwbVev
+  - packet: 406
+    peer: 1
+    index: 1
+    timestamp: 1729127147.814354000
+    data: !!binary |
+      bka2tVGmUj9UH+sij6HZxgtw3CzlB0O6KJj/PomN6w==
+  - packet: 421
+    peer: 0
+    index: 2
+    timestamp: 1729127154.300774000
+    data: !!binary |
+      Zx7fJP9Ezlf4lKzWnGQRoJcN8dc5Npbm
+  - packet: 510
+    peer: 1
+    index: 2
+    timestamp: 1729127173.027052000
+    data: !!binary |
+      0c2RN+sLADrN1zFUPl8poEPmvAw=

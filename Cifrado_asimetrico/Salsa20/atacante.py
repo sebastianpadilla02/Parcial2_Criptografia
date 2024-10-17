@@ -97,7 +97,7 @@ with open('parameters.json') as f:
     data = json.load(f)
 
 # Acceder a un único conjunto de parámetros, por ejemplo, el primero
-param_set = data["parameters"][0]  # Cambia el índice a 0, 1, 2... según el conjunto que quieras
+param_set = data["parameters"][4]  # Cambia el índice a 0, 1, 2... según el conjunto que quieras
 
 # Acceder a los valores de p, q y g
 p = param_set["p"]
@@ -107,7 +107,7 @@ g = param_set["g"]
 print(f"Conjunto seleccionado: p={p}, q={q}, g={g}")
 
 # Ruta del archivo YAML
-ruta_archivo_yaml = 'Diffie1.yaml'  # Cambia esto con la ruta correcta
+ruta_archivo_yaml = 'Diffie5.yaml'  # Cambia esto con la ruta correcta
 
 # Leer y extraer mensajes del archivo YAML
 leer_y_extraer_mensajes_yaml(ruta_archivo_yaml, p, q ,g)

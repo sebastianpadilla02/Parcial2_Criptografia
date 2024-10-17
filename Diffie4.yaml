@@ -1,0 +1,56 @@
+peers:
+  - peer: 0
+    host: 10.20.53.61
+    port: 60469
+  - peer: 1
+    host: 10.20.62.45
+    port: 8080
+packets:
+  - packet: 116
+    peer: 1
+    index: 0
+    timestamp: 1729127484.146770000
+    data: !!binary |
+      SPcupAAayW4=
+  - packet: 117
+    peer: 0
+    index: 0
+    timestamp: 1729127484.151120000
+    data: !!binary |
+      JpsS8scaZK4=
+  - packet: 157
+    peer: 0
+    index: 1
+    timestamp: 1729127493.886687000
+    data: !!binary |
+      DSXnJSpvDg4cHNXgDWq6zMZig8QVXw==
+  - packet: 253
+    peer: 1
+    index: 1
+    timestamp: 1729127503.544098000
+    data: !!binary |
+      Lf9EiRv8ueoTF0RlB+ShmCUOYauEpE+9RxU=
+  - packet: 290
+    peer: 0
+    index: 2
+    timestamp: 1729127511.877135000
+    data: !!binary |
+      FcR5Pmz6AQCvnvANqKUv6mlk8A==
+  - packet: 326
+    peer: 1
+    index: 2
+    timestamp: 1729127522.581378000
+    data: !!binary |
+      W4XYlzPnr+82D5B2Dv298WgO2mt1W/tlkTE3cA==
+  - packet: 384
+    peer: 0
+    index: 3
+    timestamp: 1729127533.070633000
+    data: !!binary |
+      7oUfFG+FCQqQ1gNL6RnPpaJFGiu3
+  - packet: 403
+    peer: 1
+    index: 3
+    timestamp: 1729127538.775925000
+    data: !!binary |
+      H7LPKG85AiFSPtA=
