@@ -1,7 +1,20 @@
 import random
+import gensafeprime
+from Crypto.Util import number
+import json
 
 class ElGamal:
-    def __init__(self, p: int, q: int, g: int):
+
+    def __init__(self, archivo_json):
+        try:
+            with open(archivo_json, 'r') as file:
+                datos = json.load(file)  # Cargar el archivo JSON
+                parametros = datos["parameters"][0]  # Acceder al primer conjunto de parámetros
+                p = parametros["p"]
+                q = parametros["q"]
+                g = parametros["g"]
+        except FileNotFoundError:
+            print(f"El archivo {archivo_json} no existe.")
         self.p = p
         self.q = q
         self.g = g
@@ -29,9 +42,9 @@ class ElGamal:
     def EEG(self, mensaje):
         # Convertir el mensaje en un entero grande para cifrar
         mensaje_entero = int.from_bytes(mensaje, 'big')
-
+        
         # Escoger un valor aleatorio para beta
-        beta = random.randint(2, self.q)
+        beta = random.randrange(2, self.q)
 
         # Calcular v = g^beta mod p
         v = self.mod_exp(self.g, beta, self.p)
