@@ -24,7 +24,6 @@ Usada para manejar el intercambio de llaves en el Escenario 2, manejando asi las
 pip install cryptography
 ```
 
-
 ### Gensafeprime
 Usada para la creación de primos de una cantidad especifica de bits, se uso para la generacion de los parámetros en El Gamal
 ```

@@ -44,6 +44,8 @@ def manejar_cliente(client_socket):
 def iniciar_servidor():
     global criptosistema, client_public_key
 
+    Parametros(1024)
+
     # Crear un socket para el servidor
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 8080))
@@ -56,10 +58,9 @@ def iniciar_servidor():
 
     # Generar el criptosistema y el par de llaves para el servidor
 
-    Parametros(1024)
-    criptosistema = ElGamal('parametros.json')
+    criptosistema = ElGamal('Cifrado_asimetrico/ElGamal/parametros.json')
 
-    with open('parametros.json', 'r') as f:
+    with open('Cifrado_asimetrico/ElGamal/parametros.json', 'r') as f:
         data = json.load(f)
 
     # Convertir el JSON en bytes

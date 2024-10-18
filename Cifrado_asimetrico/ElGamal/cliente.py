@@ -46,11 +46,11 @@ def iniciar_cliente():
     parametros = json.loads(json_data)
 
     # Guardar el archivo JSON en la carpeta del cliente
-    with open('parameters_recibidos.json', 'w') as f:
+    with open('Cifrado_asimetrico/ElGamal/parametros.json', 'w') as f:
         json.dump(parametros, f, indent=4)  # Guardar con formato (indentación)
 
     # Generar par de claves ElGamal para el cliente
-    criptosistema = ElGamal('parametros.json')
+    criptosistema = ElGamal('Cifrado_asimetrico/ElGamal/parametros.json')
     public_key, private_key = criptosistema.GEG()
 
     # Recibir la clave pública del servidor
